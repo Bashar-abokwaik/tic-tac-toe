@@ -6,9 +6,9 @@ import GameOver from "./components/GameOver";
 import { WINNING_COMBINATIONS } from "./Winning-combinatons";
 
 const PLAYERS = {
-  X: 'Player 1',
-  O: 'Player 2',
-}
+  X: "Player 1",
+  O: "Player 2",
+};
 
 const INITAIL_GAME_BOARD = [
   [null, null, null],
@@ -16,36 +16,41 @@ const INITAIL_GAME_BOARD = [
   [null, null, null],
 ];
 
+
 function deriveActivePlayer(gameTurns) {
   let currentPlayer = "X";
   if (gameTurns.length > 0 && gameTurns[0].player === "X") {
     currentPlayer = "O";
-  }
+  } // else, currentPlayer remains "X"
   return currentPlayer;
 }
 
 function deriveGameBoard(gameTurns) {
-  let gameBoard = [...INITAIL_GAME_BOARD.map(array => [...array])];
+  let gameBoard = [...INITAIL_GAME_BOARD.map((array) => [...array])]; // deep copy
   for (const turn of gameTurns) {
     const { square, player } = turn;
     const { row, col } = square;
-    gameBoard[row][col] = player;
+    gameBoard[row][col] = player; // 'X' or 'O'
   }
   return gameBoard;
 }
 
 function deriveWinner(gameBoard, players) {
   let winner = null;
-  for (const combination of WINNING_COMBINATIONS) {
-    const firstSquareSymbol = gameBoard[combination[0].row][combination[0].column];
-    const secondSquareSymbol = gameBoard[combination[1].row][combination[1].column];
-    const thirdSquareSymbol = gameBoard[combination[2].row][combination[2].column];
+  for (const combination of WINNING_COMBINATIONS) { // iterate over each winning combination
+    const firstSquareSymbol =
+      gameBoard[combination[0].row][combination[0].column]; 
+    const secondSquareSymbol =
+      gameBoard[combination[1].row][combination[1].column];
+    const thirdSquareSymbol =
+      gameBoard[combination[2].row][combination[2].column];
     if (
       firstSquareSymbol &&
       firstSquareSymbol === secondSquareSymbol &&
       firstSquareSymbol === thirdSquareSymbol
     ) {
-      winner = players[firstSquareSymbol];
+      winner = players[firstSquareSymbol]; // get the player's name
+      break; // exit loop early since we found a winner
     }
   }
   return winner;
@@ -57,38 +62,40 @@ function App() {
 
   const activePlayer = deriveActivePlayer(gameTurns);
 
-  const gameBoard = deriveGameBoard(gameTurns);
+  const gameBoard = deriveGameBoard(gameTurns); 
 
   const winner = deriveWinner(gameBoard, players);
 
-  const hasDraw = gameTurns.length === 9 && !winner;
+  const hasDraw = gameTurns.length === 9 && !winner; // all squares filled and no winner
+
+    function handlePlayerNameChange(symbol, newName) {
+    setPlayers((prevPlayers) => {
+      return {
+        ...prevPlayers,
+        [symbol]: newName,
+      }; // update the name for the given symbol
+    });
+  }
 
   function handleSelectSquare(rowIndex, colIndex) {
     setGameTurns((prevTurns) => {
-      const currentPlayer = deriveActivePlayer(prevTurns);
+      const currentPlayer = deriveActivePlayer(prevTurns); 
       const updatedTurns = [
         {
-          square: { row: rowIndex, col: colIndex },
-          player: currentPlayer
+          square: { row: rowIndex, col: colIndex }, // selected square
+          player: currentPlayer,
         },
-        ...prevTurns,
+        ...prevTurns, 
       ];
       return updatedTurns;
     });
   }
+
   function handleRestart() {
     setGameTurns([]);
-  }
+  } // reset the game
 
-  function handlePlayerNameChange(symbol, newName) {
-    setPlayers(prevPlayers => {
-      return {
-        ...prevPlayers,
-        [symbol]: newName,
-      }
-    });
 
-  }
   return (
     <main>
       <div id="game-container">
@@ -106,8 +113,10 @@ function App() {
             onChangeName={handlePlayerNameChange}
           />
         </ol>
-        {(winner || hasDraw) && <GameOver winner={winner} onRestart={handleRestart} />}
-        <GameBoard onSlectSquare={handleSelectSquare} board={gameBoard} />
+        {(winner || hasDraw) && (
+          <GameOver winner={winner} onRestart={handleRestart} />
+        )}
+        <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard} />
       </div>
       <Log turns={gameTurns} />
     </main>
